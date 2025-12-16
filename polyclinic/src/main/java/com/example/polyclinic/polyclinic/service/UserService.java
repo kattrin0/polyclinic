@@ -77,4 +77,17 @@ public class UserService {
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+    @Transactional
+    public void toggleAdmin(Integer id) {
+        UserData user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setIsAdmin(!Boolean.TRUE.equals(user.getIsAdmin()));
+            userRepository.save(user);
+        }
+    }
+
+    @Transactional
+    public void deleteUser(Integer id) {
+        userRepository.deleteById(id);
+    }
 }
