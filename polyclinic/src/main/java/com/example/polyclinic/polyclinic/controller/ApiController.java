@@ -36,6 +36,16 @@ public class ApiController {
         return doctorService.getAllDoctors();
     }
 
+    @GetMapping("/doctors/active")
+    public List<DoctorDTO> getActiveDoctors() {
+        return doctorService.getActiveDoctors();
+    }
+
+    @GetMapping("/doctors/department/{departmentId}")
+    public List<DoctorDTO> getDoctorsByDepartment(@PathVariable Integer departmentId) {
+        return doctorService.getDoctorsByDepartmentId(departmentId);
+    }
+
     @GetMapping("/services")
     public List<ServiceDTO> getServices() {
         return serviceService.getAllServices();
@@ -44,5 +54,10 @@ public class ApiController {
     @GetMapping("/services/department/{departmentName}")
     public List<ServiceDTO> getServicesByDepartment(@PathVariable String departmentName) {
         return serviceService.getServicesByDepartment(departmentName);
+    }
+
+    @GetMapping("/services/department-id/{departmentId}")
+    public List<ServiceDTO> getServicesByDepartmentId(@PathVariable Integer departmentId) {
+        return serviceService.getServicesByDepartmentId(departmentId);
     }
 }

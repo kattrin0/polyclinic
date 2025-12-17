@@ -58,12 +58,15 @@
                                     01.01.2024 10:00
                                 </td>
                                 <td>
-                                    <span th:switch="${app.status}">
-                                        <span th:case="'SCHEDULED'" class="badge bg-primary">Запланирована</span>
-                                        <span th:case="'COMPLETED'" class="badge bg-success">Завершена</span>
-                                        <span th:case="'CANCELLED'" class="badge bg-danger">Отменена</span>
-                                        <span th:case="*" class="badge bg-secondary"
-                                              th:text="${app.status ?: 'Новая'}">Статус</span>
+                                    <!-- Статусы на русском -->
+                                    <span th:if="${app.status == 'Запланирован'}" class="badge bg-primary">Запланирован</span>
+                                    <span th:if="${app.status == 'Завершен'}" class="badge bg-success">Завершен</span>
+                                    <span th:if="${app.status == 'Отменен'}" class="badge bg-danger">Отменен</span>
+                                    <span th:if="${app.status == 'Перенесен'}" class="badge bg-warning text-dark">Перенесен</span>
+                                    <!-- Fallback для неизвестных статусов -->
+                                    <span th:unless="${app.status == 'Запланирован' or app.status == 'Завершен' or app.status == 'Отменен' or app.status == 'Перенесен'}"
+                                          class="badge bg-secondary" th:text="${app.status ?: 'Неизвестно'}">
+                                        Статус
                                     </span>
                                 </td>
                                 <td>
@@ -81,25 +84,34 @@
                                         <ul class="dropdown-menu">
                                             <li>
                                                 <form th:action="@{/admin/appointments/{id}/update-status(id=${app.id})}" method="post">
-                                                    <input type="hidden" name="status" value="SCHEDULED">
+                                                    <input type="hidden" name="status" value="Запланирован">
                                                     <button type="submit" class="dropdown-item">
-                                                        <i class="bi bi-clock me-2 text-primary"></i> Запланирована
+                                                        <i class="bi bi-clock me-2 text-primary"></i> Запланирован
                                                     </button>
                                                 </form>
                                             </li>
                                             <li>
                                                 <form th:action="@{/admin/appointments/{id}/update-status(id=${app.id})}" method="post">
-                                                    <input type="hidden" name="status" value="COMPLETED">
+                                                    <input type="hidden" name="status" value="Завершен">
                                                     <button type="submit" class="dropdown-item">
-                                                        <i class="bi bi-check-circle me-2 text-success"></i> Завершена
+                                                        <i class="bi bi-check-circle me-2 text-success"></i> Завершен
                                                     </button>
                                                 </form>
                                             </li>
                                             <li>
                                                 <form th:action="@{/admin/appointments/{id}/update-status(id=${app.id})}" method="post">
-                                                    <input type="hidden" name="status" value="CANCELLED">
+                                                    <input type="hidden" name="status" value="Перенесен">
                                                     <button type="submit" class="dropdown-item">
-                                                        <i class="bi bi-x-circle me-2 text-danger"></i> Отменена
+                                                        <i class="bi bi-arrow-repeat me-2 text-warning"></i> Перенесен
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form th:action="@{/admin/appointments/{id}/update-status(id=${app.id})}" method="post">
+                                                    <input type="hidden" name="status" value="Отменен">
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="bi bi-x-circle me-2 text-danger"></i> Отменен
                                                     </button>
                                                 </form>
                                             </li>

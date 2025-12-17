@@ -96,6 +96,12 @@ public class ServiceService {
         return serviceRepository.count();
     }
 
+
+    public List<ServiceDTO> getServicesByDepartmentId(Integer departmentId) {
+        return serviceRepository.findByDepartmentId(departmentId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
     private ServiceDTO convertToDTO(Service service) {
         return new ServiceDTO(
                 service.getId(),

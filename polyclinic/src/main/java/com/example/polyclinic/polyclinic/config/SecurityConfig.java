@@ -27,19 +27,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Отключаем CSRF для простоты (для учебного проекта)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Публичные страницы
                         .requestMatchers("/", "/index").permitAll()
                         .requestMatchers("/login", "/register", "/error").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
-
                         // Только для админов
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
                         // Для авторизованных
-                        .requestMatchers("/profile/**").authenticated()
-
+                        .requestMatchers("/profile/**", "/appointment/**").authenticated()
                         // Остальное - разрешено
                         .anyRequest().permitAll()
                 )
@@ -53,10 +52,6 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutRequestMatcher(
-                                request -> "/logout".equals(request.getRequestURI()) &&
-                                        "GET".equalsIgnoreCase(request.getMethod())
-                        )
                         .logoutSuccessUrl("/login?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,9 +26,31 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // Метод для очистки текста от HTML
+    private String sanitize(String input) {
+        if (input == null) return null;
+        return HtmlUtils.htmlEscape(input).trim();
+    }
+
+    // Метод для очистки email
+    private String sanitizeEmail(String email) {
+        if (email == null) return null;
+        return email.replaceAll("[^a-zA-Z0-9@._-]", "").toLowerCase().trim();
+    }
+
+    // Метод для очистки телефона
+    private String sanitizePhone(String phone) {
+        if (phone == null) return null;
+        return phone.replaceAll("[^0-9+\\s()-]", "").trim();
+    }
+
     @Transactional
     public UserData registerUser(UserRegistrationDTO dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        String fullName = sanitize(dto.getFullName());
+        String email = sanitizeEmail(dto.getEmail());
+        String phone = sanitizePhone(dto.getPhone());
+
+        if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Пользователь с таким email уже существует");
         }
 
@@ -36,9 +59,9 @@ public class UserService {
         }
 
         UserData user = new UserData();
-        user.setFullName(dto.getFullName());
-        user.setEmail(dto.getEmail());
-        user.setPhone(dto.getPhone());
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setIsAdmin(false);
 
@@ -46,7 +69,8 @@ public class UserService {
     }
 
     public UserData findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        String sanitizedEmail = sanitizeEmail(email);
+        return userRepository.findByEmail(sanitizedEmail).orElse(null);
     }
 
     public UserDTO getUserDTO(String email) {
@@ -90,15 +114,22 @@ public class UserService {
         UserData user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-        user.setFullName(dto.getFullName());
-        user.setEmail(dto.getEmail());
-        user.setPhone(dto.getPhone());
+        String fullName = sanitize(dto.getFullName());
+        String email = sanitizeEmail(dto.getEmail());
+        String phone = sanitizePhone(dto.getPhone());
+
+        if (!user.getEmail().equals(email) && userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Пользователь с таким email уже существует");
+        }
+
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
 
         if (dto.getIsAdmin() != null) {
             user.setIsAdmin(dto.getIsAdmin());
         }
 
-        // Обновляем пароль только если он указан
         if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
@@ -121,7 +152,8 @@ public class UserService {
     }
 
     public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+        String sanitizedEmail = sanitizeEmail(email);
+        return userRepository.existsByEmail(sanitizedEmail);
     }
 
     public long count() {

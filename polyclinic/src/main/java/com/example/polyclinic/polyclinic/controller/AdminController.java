@@ -43,7 +43,6 @@ public class AdminController {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
         model.addAttribute("currentUser", currentUser);
 
-        // Только статистика
         model.addAttribute("usersCount", userService.count());
         model.addAttribute("doctorsCount", doctorService.count());
         model.addAttribute("servicesCount", serviceService.count());
@@ -58,7 +57,7 @@ public class AdminController {
     public String usersPage(@RequestParam(defaultValue = "0") int page,
                             Model model, Principal principal) {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").ascending());
         Page<UserDTO> usersPage = userService.getAllUsersPaged(pageable);
 
         model.addAttribute("currentUser", currentUser);
@@ -70,17 +69,22 @@ public class AdminController {
         return "admin/users";
     }
 
-    @GetMapping("/users/{id}/edit")
-    @ResponseBody
-    public UserEditDTO getUserForEdit(@PathVariable Integer id) {
-        return userService.getUserForEdit(id);
-    }
-
     @PostMapping("/users/{id}/update")
     public String updateUser(@PathVariable Integer id,
-                             @ModelAttribute UserEditDTO dto,
+                             @RequestParam String fullName,
+                             @RequestParam String email,
+                             @RequestParam(required = false) String phone,
+                             @RequestParam(required = false) String password,
+                             @RequestParam(required = false) Boolean isAdmin,
                              RedirectAttributes redirectAttributes) {
         try {
+            UserEditDTO dto = new UserEditDTO();
+            dto.setFullName(fullName);
+            dto.setEmail(email);
+            dto.setPhone(phone);
+            dto.setPassword(password);
+            dto.setIsAdmin(isAdmin != null && isAdmin);
+
             userService.updateUser(id, dto);
             redirectAttributes.addFlashAttribute("success", "Пользователь успешно обновлён");
         } catch (Exception e) {
@@ -91,8 +95,12 @@ public class AdminController {
 
     @PostMapping("/users/{id}/toggle-admin")
     public String toggleAdmin(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        userService.toggleAdmin(id);
-        redirectAttributes.addFlashAttribute("success", "Роль пользователя изменена");
+        try {
+            userService.toggleAdmin(id);
+            redirectAttributes.addFlashAttribute("success", "Роль пользователя изменена");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
@@ -112,7 +120,7 @@ public class AdminController {
     public String doctorsPage(@RequestParam(defaultValue = "0") int page,
                               Model model, Principal principal) {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").ascending());
         Page<DoctorDTO> doctorsPage = doctorService.getAllDoctorsPaged(pageable);
 
         model.addAttribute("currentUser", currentUser);
@@ -125,17 +133,45 @@ public class AdminController {
         return "admin/doctors";
     }
 
-    @GetMapping("/doctors/{id}/edit")
-    @ResponseBody
-    public DoctorEditDTO getDoctorForEdit(@PathVariable Integer id) {
-        return doctorService.getDoctorForEdit(id);
+    @PostMapping("/doctors/create")
+    public String createDoctor(@RequestParam String fullName,
+                               @RequestParam String email,
+                               @RequestParam(required = false) String phone,
+                               @RequestParam String password,
+                               @RequestParam String specialization,
+                               @RequestParam Integer departmentId,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            DoctorCreateDTO dto = new DoctorCreateDTO();
+            dto.setFullName(fullName);
+            dto.setEmail(email);
+            dto.setPhone(phone);
+            dto.setPassword(password);
+            dto.setSpecialization(specialization);
+            dto.setDepartmentId(departmentId);
+
+            doctorService.createDoctor(dto);
+            redirectAttributes.addFlashAttribute("success", "Врач успешно добавлен");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
+        }
+        return "redirect:/admin/doctors";
     }
 
     @PostMapping("/doctors/{id}/update")
     public String updateDoctor(@PathVariable Integer id,
-                               @ModelAttribute DoctorEditDTO dto,
+                               @RequestParam String fullName,
+                               @RequestParam String specialization,
+                               @RequestParam Integer departmentId,
+                               @RequestParam(required = false) Boolean isActive,
                                RedirectAttributes redirectAttributes) {
         try {
+            DoctorEditDTO dto = new DoctorEditDTO();
+            dto.setFullName(fullName);
+            dto.setSpecialization(specialization);
+            dto.setDepartmentId(departmentId);
+            dto.setIsActive(isActive != null && isActive);
+
             doctorService.updateDoctor(id, dto);
             redirectAttributes.addFlashAttribute("success", "Врач успешно обновлён");
         } catch (Exception e) {
@@ -146,17 +182,31 @@ public class AdminController {
 
     @PostMapping("/doctors/{id}/toggle-active")
     public String toggleDoctorActive(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        doctorService.toggleActive(id);
-        redirectAttributes.addFlashAttribute("success", "Статус врача изменён");
+        try {
+            doctorService.toggleActive(id);
+            redirectAttributes.addFlashAttribute("success", "Статус врача изменён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
+        }
         return "redirect:/admin/doctors";
     }
 
+    @PostMapping("/doctors/{id}/delete")
+    public String deleteDoctor(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            doctorService.deleteDoctor(id);
+            redirectAttributes.addFlashAttribute("success", "Врач удалён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
+        }
+        return "redirect:/admin/doctors";
+    }
     // ==================== УСЛУГИ ====================
     @GetMapping("/services")
     public String servicesPage(@RequestParam(defaultValue = "0") int page,
                                Model model, Principal principal) {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").ascending());
         Page<ServiceDTO> servicesPage = serviceService.getAllServicesPaged(pageable);
 
         model.addAttribute("currentUser", currentUser);
@@ -169,17 +219,20 @@ public class AdminController {
         return "admin/services";
     }
 
-    @GetMapping("/services/{id}/edit")
-    @ResponseBody
-    public ServiceEditDTO getServiceForEdit(@PathVariable Integer id) {
-        return serviceService.getServiceForEdit(id);
-    }
-
     @PostMapping("/services/{id}/update")
     public String updateService(@PathVariable Integer id,
-                                @ModelAttribute ServiceEditDTO dto,
+                                @RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                @RequestParam java.math.BigDecimal price,
+                                @RequestParam Integer departmentId,
                                 RedirectAttributes redirectAttributes) {
         try {
+            ServiceEditDTO dto = new ServiceEditDTO();
+            dto.setName(name);
+            dto.setDescription(description);
+            dto.setPrice(price);
+            dto.setDepartmentId(departmentId);
+
             serviceService.updateService(id, dto);
             redirectAttributes.addFlashAttribute("success", "Услуга успешно обновлена");
         } catch (Exception e) {
@@ -200,9 +253,18 @@ public class AdminController {
     }
 
     @PostMapping("/services/create")
-    public String createService(@ModelAttribute ServiceEditDTO dto,
+    public String createService(@RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                @RequestParam java.math.BigDecimal price,
+                                @RequestParam Integer departmentId,
                                 RedirectAttributes redirectAttributes) {
         try {
+            ServiceEditDTO dto = new ServiceEditDTO();
+            dto.setName(name);
+            dto.setDescription(description);
+            dto.setPrice(price);
+            dto.setDepartmentId(departmentId);
+
             serviceService.createService(dto);
             redirectAttributes.addFlashAttribute("success", "Услуга создана");
         } catch (Exception e) {
@@ -216,7 +278,7 @@ public class AdminController {
     public String departmentsPage(@RequestParam(defaultValue = "0") int page,
                                   Model model, Principal principal) {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").ascending());
         Page<DepartmentDTO> departmentsPage = departmentService.getAllDepartmentsPaged(pageable);
 
         model.addAttribute("currentUser", currentUser);
@@ -228,17 +290,16 @@ public class AdminController {
         return "admin/departments";
     }
 
-    @GetMapping("/departments/{id}/edit")
-    @ResponseBody
-    public DepartmentDTO getDepartmentForEdit(@PathVariable Integer id) {
-        return departmentService.getDepartmentById(id);
-    }
-
     @PostMapping("/departments/{id}/update")
     public String updateDepartment(@PathVariable Integer id,
-                                   @ModelAttribute DepartmentDTO dto,
+                                   @RequestParam String name,
+                                   @RequestParam(required = false) String description,
                                    RedirectAttributes redirectAttributes) {
         try {
+            DepartmentDTO dto = new DepartmentDTO();
+            dto.setName(name);
+            dto.setDescription(description);
+
             departmentService.updateDepartment(id, dto);
             redirectAttributes.addFlashAttribute("success", "Отделение обновлено");
         } catch (Exception e) {
@@ -248,9 +309,14 @@ public class AdminController {
     }
 
     @PostMapping("/departments/create")
-    public String createDepartment(@ModelAttribute DepartmentDTO dto,
+    public String createDepartment(@RequestParam String name,
+                                   @RequestParam(required = false) String description,
                                    RedirectAttributes redirectAttributes) {
         try {
+            DepartmentDTO dto = new DepartmentDTO();
+            dto.setName(name);
+            dto.setDescription(description);
+
             departmentService.createDepartment(dto);
             redirectAttributes.addFlashAttribute("success", "Отделение создано");
         } catch (Exception e) {
@@ -275,7 +341,7 @@ public class AdminController {
     public String appointmentsPage(@RequestParam(defaultValue = "0") int page,
                                    Model model, Principal principal) {
         UserDTO currentUser = userService.getUserDTO(principal.getName());
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("appointmentDate").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").ascending());
         Page<AppointmentDTO> appointmentsPage = appointmentService.getAllAppointmentsPaged(pageable);
 
         model.addAttribute("currentUser", currentUser);
@@ -310,4 +376,5 @@ public class AdminController {
         }
         return "redirect:/admin/appointments";
     }
+
 }

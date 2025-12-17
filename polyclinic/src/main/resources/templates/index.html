@@ -374,21 +374,38 @@
                 <p class="text-muted lead">Полный спектр медицинских услуг по доступным ценам</p>
             </div>
 
-            <!-- Фильтры -->
+            <!-- Компактный фильтр -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2 justify-content-center">
-                        <button class="btn"
-                                :class="selectedDepartment === null ? 'btn-primary' : 'btn-outline-secondary'"
-                                @click="selectedDepartment = null">
-                            Все услуги
-                        </button>
-                        <button v-for="dept in departments" :key="dept.id"
-                                class="btn"
-                                :class="selectedDepartment === dept.name ? 'btn-primary' : 'btn-outline-secondary'"
-                                @click="selectedDepartment = dept.name">
-                            {{ getDepartmentIcon(dept.name) }} {{ dept.name }}
-                        </button>
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 col-lg-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-funnel text-primary me-2"></i>
+                                <select v-model="selectedDepartment" class="form-select">
+                                    <option :value="null">Все отделения</option>
+                                    <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+                                        {{ dept.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-6 mt-2 mt-md-0">
+                            <div v-if="selectedDepartment" class="d-flex align-items-center">
+                            <span class="badge bg-primary fs-6 d-flex align-items-center">
+                                {{ getDepartmentIcon(selectedDepartment) }}
+                                <span class="ms-1">{{ selectedDepartment }}</span>
+                                <button type="button" class="btn-close btn-close-white ms-2"
+                                        style="font-size: 0.6rem;"
+                                        @click="selectedDepartment = null"></button>
+                            </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-3 text-md-end mt-2 mt-md-0">
+                        <span class="text-muted">
+                            <i class="bi bi-list-ul me-1"></i>
+                            Найдено: <strong class="text-primary">{{ filteredServices.length }}</strong> услуг
+                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -401,26 +418,35 @@
                             <div class="row align-items-center">
                                 <div class="col-lg-7">
                                     <div class="d-flex align-items-start">
-                                        <span class="service-icon me-3">
-                                            {{ getDepartmentIcon(service.departmentName) }}
-                                        </span>
+                                    <span class="service-icon me-3">
+                                        {{ getDepartmentIcon(service.departmentName) }}
+                                    </span>
                                         <div>
                                             <h5 class="mb-1 fw-bold">{{ service.name }}</h5>
                                             <p class="text-muted mb-2">{{ service.description }}</p>
                                             <span class="badge bg-info-subtle text-info">
-                                                {{ service.departmentName }}
-                                            </span>
+                                            {{ service.departmentName }}
+                                        </span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-5 mt-3 mt-lg-0">
                                     <div class="d-flex align-items-center justify-content-lg-end gap-4">
-                                        <span class="h4 text-primary mb-0 fw-bold">
-                                            {{ formatPrice(service.price) }} ₽
-                                        </span>
-                                        <button class="btn btn-primary px-4">
-                                            <i class="bi bi-calendar-plus me-2"></i> Записаться
-                                        </button>
+                                    <span class="h4 text-primary mb-0 fw-bold">
+                                        {{ formatPrice(service.price) }} ₽
+                                    </span>
+                                        <!-- Для авторизованных -->
+                                        <th:block sec:authorize="isAuthenticated()">
+                                            <button class="btn btn-primary px-4" @click="bookService(service)">
+                                                <i class="bi bi-calendar-plus me-2"></i> Записаться
+                                            </button>
+                                        </th:block>
+                                        <!-- Для неавторизованных -->
+                                        <th:block sec:authorize="!isAuthenticated()">
+                                            <a th:href="@{/login}" class="btn btn-primary px-4">
+                                                <i class="bi bi-calendar-plus me-2"></i> Записаться
+                                            </a>
+                                        </th:block>
                                     </div>
                                 </div>
                             </div>
@@ -432,7 +458,10 @@
             <div v-if="filteredServices.length === 0" class="text-center py-5">
                 <i class="bi bi-search display-1 text-muted"></i>
                 <h4 class="mt-3">Услуги не найдены</h4>
-                <p class="text-muted">Попробуйте выбрать другое отделение</p>
+                <p class="text-muted">В выбранном отделении нет услуг</p>
+                <button class="btn btn-primary" @click="selectedDepartment = null">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Показать все услуги
+                </button>
             </div>
         </div>
     </div>
@@ -445,21 +474,38 @@
                 <p class="text-muted lead">Команда опытных специалистов</p>
             </div>
 
-            <!-- Фильтры -->
+            <!-- Компактный фильтр -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2 justify-content-center">
-                        <button class="btn"
-                                :class="selectedSpecialization === null ? 'btn-primary' : 'btn-outline-secondary'"
-                                @click="selectedSpecialization = null">
-                            Все врачи
-                        </button>
-                        <button v-for="dept in departments" :key="dept.id"
-                                class="btn"
-                                :class="selectedSpecialization === dept.name ? 'btn-primary' : 'btn-outline-secondary'"
-                                @click="selectedSpecialization = dept.name">
-                            {{ getDepartmentIcon(dept.name) }} {{ dept.name }}
-                        </button>
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 col-lg-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-funnel text-primary me-2"></i>
+                                <select v-model="selectedSpecialization" class="form-select">
+                                    <option :value="null">Все отделения</option>
+                                    <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+                                        {{ dept.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-6 mt-2 mt-md-0">
+                            <div v-if="selectedSpecialization" class="d-flex align-items-center">
+                            <span class="badge bg-primary fs-6 d-flex align-items-center">
+                                {{ getDepartmentIcon(selectedSpecialization) }}
+                                <span class="ms-1">{{ selectedSpecialization }}</span>
+                                <button type="button" class="btn-close btn-close-white ms-2"
+                                        style="font-size: 0.6rem;"
+                                        @click="selectedSpecialization = null"></button>
+                            </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-3 text-md-end mt-2 mt-md-0">
+                        <span class="text-muted">
+                            <i class="bi bi-people me-1"></i>
+                            Найдено: <strong class="text-primary">{{ filteredDoctors.length }}</strong> врачей
+                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -472,9 +518,9 @@
                             <img :src="doctor.photoUrl" class="card-img-top" :alt="doctor.fullName">
                             <span class="badge position-absolute top-0 end-0 m-2"
                                   :class="doctor.active ? 'bg-success' : 'bg-secondary'">
-                                <i class="bi bi-circle-fill me-1"></i>
-                                {{ doctor.active ? 'Принимает' : 'Не принимает' }}
-                            </span>
+                            <i class="bi bi-circle-fill me-1"></i>
+                            {{ doctor.active ? 'Принимает' : 'Не принимает' }}
+                        </span>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title fw-bold mb-1">{{ doctor.fullName }}</h5>
@@ -482,9 +528,20 @@
                             <p class="text-muted small mb-3">
                                 <i class="bi bi-building me-1"></i> {{ doctor.departmentName }}
                             </p>
-                            <button class="btn btn-primary w-100" :disabled="!doctor.active">
-                                <i class="bi bi-calendar-check me-1"></i> Записаться на приём
-                            </button>
+                            <!-- Для авторизованных -->
+                            <th:block sec:authorize="isAuthenticated()">
+                                <button class="btn btn-primary w-100"
+                                        :disabled="!doctor.active"
+                                        @click="bookDoctor(doctor)">
+                                    <i class="bi bi-calendar-check me-1"></i> Записаться на приём
+                                </button>
+                            </th:block>
+                            <!-- Для неавторизованных -->
+                            <th:block sec:authorize="!isAuthenticated()">
+                                <a th:href="@{/login}" class="btn btn-primary w-100">
+                                    <i class="bi bi-calendar-check me-1"></i> Записаться на приём
+                                </a>
+                            </th:block>
                         </div>
                     </div>
                 </div>
@@ -493,11 +550,13 @@
             <div v-if="filteredDoctors.length === 0" class="text-center py-5">
                 <i class="bi bi-person-x display-1 text-muted"></i>
                 <h4 class="mt-3">Врачи не найдены</h4>
-                <p class="text-muted">Попробуйте выбрать другое отделение</p>
+                <p class="text-muted">В выбранном отделении нет врачей</p>
+                <button class="btn btn-primary" @click="selectedSpecialization = null">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Показать всех врачей
+                </button>
             </div>
         </div>
     </div>
-
     <!-- ==================== СТРАНИЦА КОНТАКТОВ ==================== -->
     <div v-if="currentPage === 'contacts'" class="py-5">
         <div class="container">
