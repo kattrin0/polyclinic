@@ -1,0 +1,107 @@
+package com.example.polyclinic.polyclinic.controller;
+
+import com.example.polyclinic.polyclinic.dto.AppointmentCreateDTO;
+import com.example.polyclinic.polyclinic.dto.AppointmentDTO;
+import com.example.polyclinic.polyclinic.service.AppointmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/appointments")
+public class AppointmentApiController {
+
+    private final AppointmentService appointmentService;
+
+    public AppointmentApiController(AppointmentService appointmentService) {
+        this.appointmentService = appointmentService;
+    }
+
+    // Получить все записи (для админа)
+    @GetMapping
+    public ResponseEntity<Page<AppointmentDTO>> getAllAppointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsPaged(pageable));
+    }
+
+    // Получить записи текущего пользователя
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyAppointments(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Не авторизован"));
+        }
+        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByUserEmail(principal.getName());
+        return ResponseEntity.ok(appointments);
+    }
+
+    // Создать запись
+    @PostMapping
+    public ResponseEntity<?> createAppointment(@RequestBody AppointmentCreateDTO dto, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Не авторизован"));
+        }
+
+        try {
+            // Парсим дату из ISO формата
+            if (dto.getAppointmentDate() != null && dto.getAppointmentDate().contains("T")) {
+                String[] parts = dto.getAppointmentDate().split("T");
+                dto.setAppointmentDate(parts[0]);
+                if (parts.length > 1) {
+                    dto.setAppointmentTime(parts[1].substring(0, 5)); // HH:mm
+                }
+            }
+
+            appointmentService.createAppointment(dto, principal.getName());
+            return ResponseEntity.ok(Map.of("message", "Запись создана успешно"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // Отменить запись
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelAppointment(@PathVariable Integer id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Не авторизован"));
+        }
+
+        try {
+            appointmentService.cancelAppointment(id, principal.getName());
+            return ResponseEntity.ok(Map.of("message", "Запись отменена"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // Обновить статус (для админа)
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        try {
+            String status = body.get("status");
+            appointmentService.updateStatus(id, status);
+            return ResponseEntity.ok(Map.of("message", "Статус обновлён"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // Удалить запись (для админа)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAppointment(@PathVariable Integer id) {
+        try {
+            appointmentService.deleteAppointment(id);
+            return ResponseEntity.ok(Map.of("message", "Запись удалена"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+}

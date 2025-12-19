@@ -1,138 +1,69 @@
-const { createApp } = Vue
+// ============================================
+// ГЛАВНОЕ VUE ПРИЛОЖЕНИЕ
+// ============================================
 
-createApp({
+const { createApp } = Vue;
+
+// Создаём приложение
+const app = createApp({
     data() {
         return {
-            currentPage: 'home',
-            departments: [],
-            doctors: [],
-            services: [],
-            selectedDepartment: null,
-            selectedSpecialization: null,
-            loading: true,
-            error: null,
-            // Для модального окна записи
-            showBookingModal: false,
-            selectedService: null,
-            selectedDoctor: null
-        }
+            ready: false
+        };
     },
-
+    
     computed: {
-        filteredServices() {
-            if (!this.selectedDepartment) {
-                return this.services;
-            }
-            return this.services.filter(s => s.departmentName === this.selectedDepartment);
+        loading() {
+            return Store.state.loading;
         },
-
-        filteredDoctors() {
-            if (!this.selectedSpecialization) {
-                return this.doctors;
-            }
-            return this.doctors.filter(d => d.departmentName === this.selectedSpecialization);
+        
+        isAdminRoute() {
+            return this.$route.path.startsWith('/admin');
         }
     },
-
-    methods: {
-        async loadData() {
-            this.loading = true;
-            try {
-                const [deptResponse, doctorsResponse, servicesResponse] = await Promise.all([
-                    axios.get('/api/departments'),
-                    axios.get('/api/doctors'),
-                    axios.get('/api/services')
-                ]);
-
-                this.departments = deptResponse.data;
-                this.doctors = doctorsResponse.data;
-                this.services = servicesResponse.data;
-
-                console.log('✅ Данные загружены:', {
-                    departments: this.departments.length,
-                    doctors: this.doctors.length,
-                    services: this.services.length
-                });
-            } catch (error) {
-                console.error('❌ Ошибка загрузки:', error);
-                this.error = 'Не удалось загрузить данные';
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        formatPrice(price) {
-            return new Intl.NumberFormat('ru-RU').format(price);
-        },
-
-        getDepartmentIcon(name) {
-            const icons = {
-                'Терапия': '🩺',
-                'Кардиология': '❤️',
-                'Неврология': '🧠',
-                'Офтальмология': '👁️',
-                'Стоматология': '🦷',
-                'Хирургия': '⚕️',
-                'Педиатрия': '👶',
-                'Гинекология': '🌸',
-                'Урология': '💧',
-                'Дерматология': '🧴'
-            };
-            return icons[name] || '🏥';
-        },
-
-        // Переход на страницу услуг с выбранным фильтром
-        goToServicesWithFilter(departmentName) {
-            this.selectedDepartment = departmentName;
-            this.currentPage = 'services';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-
-        // Скролл вверх при смене страницы
-        scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-
-        // Запись на услугу
-        bookService(service) {
-            window.location.href = '/appointment/book?serviceId=' + service.id;
-        },
-
-        // Запись к врачу
-        bookDoctor(doctor) {
-            window.location.href = '/appointment/book?doctorId=' + doctor.id;
-        },
-
-        // Сброс фильтра отделений
-        clearDepartmentFilter() {
-            this.selectedDepartment = null;
-        },
-
-        clearSpecializationFilter() {
-            this.selectedSpecialization = null;
+    
+    async created() {
+        // Инициализация
+        console.log('🏥 МедЦентр+ запускается...');
+        
+        // Проверяем авторизацию
+        const token = localStorage.getItem('token');
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            await Store.checkAuth();
         }
-    },
-
-    watch: {
-        // При смене страницы скроллим вверх
-        currentPage() {
-            this.scrollToTop();
-        }
-    },
-
-    mounted() {
-        this.loadData();
-
-        // Добавляем класс при скролле для тени хедера
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.header');
-            if (header) {
-                if (window.scrollY > 50) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-            }
-        });
+        
+        // Загружаем публичные данные
+        await Store.loadPublicData();
+        
+        this.ready = true;
+        console.log('✅ МедЦентр+ готов к работе!');
     }
-}).mount('#app')
+});
+
+// ==================== РЕГИСТРАЦИЯ КОМПОНЕНТОВ ====================
+
+// Общие компоненты
+app.component('navbar-component', NavbarComponent);
+app.component('footer-component', FooterComponent);
+app.component('toast-container', ToastContainer);
+app.component('loading-spinner', LoadingSpinner);
+app.component('empty-state', EmptyState);
+app.component('pagination-component', PaginationComponent);
+app.component('confirm-modal', ConfirmModal);
+
+// Админ компоненты
+app.component('admin-sidebar', AdminSidebar);
+
+// ==================== ПОДКЛЮЧЕНИЕ РОУТЕРА ====================
+
+app.use(router);
+
+// ==================== ГЛОБАЛЬНЫЕ СВОЙСТВА ====================
+
+app.config.globalProperties.$store = Store;
+app.config.globalProperties.$api = API;
+
+// ==================== МОНТИРОВАНИЕ ====================
+
+app.mount('#app');

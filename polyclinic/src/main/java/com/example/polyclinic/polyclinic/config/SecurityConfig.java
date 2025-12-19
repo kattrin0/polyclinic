@@ -27,35 +27,53 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Отключаем CSRF для простоты (для учебного проекта)
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Публичные страницы
-                        .requestMatchers("/", "/index").permitAll()
-                        .requestMatchers("/login", "/register", "/error").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/api/**").permitAll()
-                        // Только для админов
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // Для авторизованных
-                        .requestMatchers("/profile/**", "/appointment/**").authenticated()
-                        // Остальное - разрешено
+                        // ВАЖНО: Статические ресурсы в первую очередь!
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/images/**", "/fonts/**").permitAll()
+                        .requestMatchers("/index.html", "/favicon.ico").permitAll()
+
+                        // SPA маршруты
+                        .requestMatchers("/", "/login", "/register", "/services", "/doctors", "/contacts").permitAll()
+                        .requestMatchers("/profile", "/profile/**", "/my-appointments", "/book-appointment").permitAll()
+                        .requestMatchers("/admin", "/admin/**").permitAll()
+
+                        // Публичные API
+                        .requestMatchers("/api/departments/**").permitAll()
+                        .requestMatchers("/api/doctors/**").permitAll()
+                        .requestMatchers("/api/services/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+
+                        // API требующие авторизации
+                        .requestMatchers("/api/auth/me", "/api/auth/profile", "/api/auth/logout").authenticated()
+                        .requestMatchers("/api/appointments/my").authenticated()
+                        .requestMatchers("/api/appointments/**").authenticated()
+
+                        // Админские API
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/stats/**").hasRole("ADMIN")
+
                         .anyRequest().permitAll()
                 )
                 .userDetailsService(userDetailsService)
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true")
-                        .permitAll()
+                .formLogin(form -> form.disable())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"message\": \"Не авторизован\"}");
+                        })
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"message\": \"Выход выполнен\"}");
+                        })
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll()
                 );
 
         return http.build();

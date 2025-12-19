@@ -179,12 +179,27 @@ public class DoctorService {
     }
 
     private DoctorDTO convertToDTO(Doctor doctor) {
+        String email = null;
+        String phone = null;
+
+        if (doctor.getUser() != null) {
+            email = doctor.getUser().getEmail();
+            phone = doctor.getUser().getPhone();
+        }
+
+        Integer departmentId = null;
+        if (doctor.getDepartment() != null) {
+            departmentId = doctor.getDepartment().getId();
+        }
+
         return new DoctorDTO(
                 doctor.getId(),
                 doctor.getFullName(),
+                email,
+                phone,
                 doctor.getSpecialization(),
                 doctor.getDepartmentName(),
-                "https://via.placeholder.com/150?text=" + doctor.getId(),
+                departmentId,
                 doctor.getIsActive() != null && doctor.getIsActive()
         );
     }

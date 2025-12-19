@@ -26,22 +26,30 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Метод для очистки текста от HTML
+    // для очистки текста от HTML
     private String sanitize(String input) {
         if (input == null) return null;
         return HtmlUtils.htmlEscape(input).trim();
     }
 
-    // Метод для очистки email
+    //  для очистки email
     private String sanitizeEmail(String email) {
         if (email == null) return null;
         return email.replaceAll("[^a-zA-Z0-9@._-]", "").toLowerCase().trim();
     }
 
-    // Метод для очистки телефона
+    //  для очистки телефона
     private String sanitizePhone(String phone) {
         if (phone == null) return null;
         return phone.replaceAll("[^0-9+\\s()-]", "").trim();
+    }
+    // для проверки пароля
+    public boolean checkPassword(String email, String rawPassword) {
+        UserData user = userRepository.findByEmail(sanitizeEmail(email)).orElse(null);
+        if (user == null) {
+            return false;
+        }
+        return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
     @Transactional

@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @Service
 public class AppointmentService {
 
-    // Статусы согласно CHECK constraint в БД
     public static final String STATUS_SCHEDULED = "Запланирован";
     public static final String STATUS_COMPLETED = "Завершен";
     public static final String STATUS_CANCELLED = "Отменен";
@@ -74,8 +73,19 @@ public class AppointmentService {
                 .orElseGet(() -> {
                     Patient newPatient = new Patient();
                     newPatient.setUser(user);
-                    newPatient.setSnils("000-000-000 00");
-                    newPatient.setAddress("Не указан");
+
+                    // Генерируем уникальный SNILS
+                    String uniqueSnils = generateUniqueSnils(user.getId());
+                    newPatient.setSnils(uniqueSnils);
+
+                    // Адрес можно оставить как есть или пустым
+                    newPatient.setAddress("-");
+
+                    // Gender - ставим NULL (если разрешено) или допустимое значение
+                    // Попробуйте один из вариантов:
+                    newPatient.setGender(null);  // Вариант 1: NULL
+                    // newPatient.setGender("М");  // Вариант 2: если нужен пол
+
                     return patientRepository.save(newPatient);
                 });
 
@@ -102,15 +112,29 @@ public class AppointmentService {
         appointment.setService(service);
         appointment.setAppointmentDate(appointmentDateTime);
         appointment.setPrice(service.getPrice());
-        appointment.setStatus(STATUS_SCHEDULED); // "Запланирован"
+        appointment.setStatus(STATUS_SCHEDULED);
 
-        // Notes может быть null
         String notes = dto.getNotes();
         if (notes != null && !notes.trim().isEmpty()) {
             appointment.setNotes(notes.trim());
         }
 
         appointmentRepository.save(appointment);
+    }
+
+    // Генерация уникального SNILS
+    private String generateUniqueSnils(Integer userId) {
+        long timestamp = System.currentTimeMillis() % 1000000000L;
+        long combined = userId * 1000000L + timestamp % 1000000L;
+
+        String digits = String.format("%09d", combined % 1000000000L);
+        String checksum = String.format("%02d", (userId + (int)(timestamp % 100)) % 100);
+
+        return String.format("%s-%s-%s %s",
+                digits.substring(0, 3),
+                digits.substring(3, 6),
+                digits.substring(6, 9),
+                checksum);
     }
 
     @Transactional
@@ -128,7 +152,7 @@ public class AppointmentService {
             throw new RuntimeException("Вы не можете отменить чужую запись");
         }
 
-        appointment.setStatus(STATUS_CANCELLED); // "Отменен"
+        appointment.setStatus(STATUS_CANCELLED);
         appointmentRepository.save(appointment);
     }
 
@@ -137,7 +161,6 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Запись не найдена"));
 
-        // Проверяем допустимость статуса
         if (!isValidStatus(status)) {
             throw new RuntimeException("Недопустимый статус: " + status);
         }
