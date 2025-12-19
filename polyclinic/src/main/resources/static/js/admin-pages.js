@@ -412,16 +412,17 @@ const AdminUsers = {
 
     methods: {
         async loadUsers() {
-            this.loading = true;
-            try {
-                const response = await API.users.getAll();
-                this.users = response.content || response;
-            } catch (error) {
-                console.error('Load users error:', error);
-                this.error = 'Ошибка загрузки пользователей';
-            } finally {
-                this.loading = false;
-            }
+          this.loading = true;
+          try {
+            // Увеличьте size до 1000 или возьмите все:
+            const response = await API.users.getAll(0, 1000); // ← вот здесь
+            this.users = response.content || response;
+          } catch (error) {
+            console.error('Load users error:', error);
+            this.error = 'Ошибка загрузки пользователей';
+          } finally {
+            this.loading = false;
+          }
         },
 
         editUser(user) {
