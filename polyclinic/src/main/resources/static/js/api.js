@@ -194,11 +194,11 @@ const API = {
     },
 
    // ==================== USERS (Admin) ====================
-   users: {
-       async getAll(page = 0, size = 20) {
-           const response = await axios.get(`/users?page=${page}&size=${size}`);
-           return response.data;
-       },
+    users: {
+      async getAll(page = 0, size = 20) {
+        const response = await axios.get(`/users?page=${page}&size=${size}`);
+        return response.data;
+      },
 
        async getById(id) {
            const response = await axios.get(`/users/${id}`);

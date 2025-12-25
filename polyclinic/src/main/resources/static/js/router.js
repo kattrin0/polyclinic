@@ -5,22 +5,21 @@
 const { createRouter, createWebHistory } = VueRouter;
 
 const routes = [
-    // ==================== ПУБЛИЧНЫЕ ====================
+    // ПУБЛИЧНЫЕ
     { path: '/', name: 'home', component: HomePage },
     { path: '/services', name: 'services', component: ServicesPage },
     { path: '/doctors', name: 'doctors', component: DoctorsPage },
-    // КОНТАКТЫ УБРАНЫ - { path: '/contacts', name: 'contacts', component: ContactsPage },
 
-    // ==================== АВТОРИЗАЦИЯ ====================
+    //  АВТОРИЗАЦИЯ
     { path: '/login', name: 'login', component: LoginPage, meta: { guest: true } },
     { path: '/register', name: 'register', component: RegisterPage, meta: { guest: true } },
 
-    // ==================== ПОЛЬЗОВАТЕЛЬСКИЕ ====================
+    //  ПОЛЬЗОВАТЕЛЬСКИЕ
     { path: '/profile', name: 'profile', component: ProfilePage, meta: { requiresAuth: true } },
     { path: '/my-appointments', name: 'my-appointments', component: MyAppointmentsPage, meta: { requiresAuth: true } },
     { path: '/book-appointment', name: 'book-appointment', component: BookAppointmentPage, meta: { requiresAuth: true } },
 
-    // ==================== АДМИН-ПАНЕЛЬ ====================
+    //  АДМИН-ПАНЕЛЬ
     {
         path: '/admin',
         component: AdminLayout,
@@ -35,7 +34,7 @@ const routes = [
         ]
     },
 
-    // ==================== 404 ====================
+    //  404
     {
         path: '/:pathMatch(.*)*',
         name: 'not-found',
@@ -62,7 +61,7 @@ const router = createRouter({
     }
 });
 
-// ==================== GUARDS ====================
+//  GUARDS
 router.beforeEach(async (to, from, next) => {
     if (Store.state.user === null && document.cookie.includes('JSESSIONID')) {
         await Store.checkAuth();
@@ -88,4 +87,4 @@ router.beforeEach(async (to, from, next) => {
     next();
 });
 
-console.log('✅ router.js загружен');
+console.log(' router.js загружен');

@@ -1,7 +1,3 @@
-// ============================================
-// ГЛАВНОЕ VUE ПРИЛОЖЕНИЕ
-// ============================================
-
 const { createApp } = Vue;
 
 // Создаём приложение
@@ -41,7 +37,7 @@ const app = createApp({
     }
 });
 
-// ==================== РЕГИСТРАЦИЯ КОМПОНЕНТОВ ====================
+//  РЕГИСТРАЦИЯ КОМПОНЕНТОВ
 
 // Общие компоненты
 app.component('navbar-component', NavbarComponent);
@@ -55,15 +51,9 @@ app.component('confirm-modal', ConfirmModal);
 // Админ компоненты
 app.component('admin-sidebar', AdminSidebar);
 
-// ==================== ПОДКЛЮЧЕНИЕ РОУТЕРА ====================
-
 app.use(router);
-
-// ==================== ГЛОБАЛЬНЫЕ СВОЙСТВА ====================
 
 app.config.globalProperties.$store = Store;
 app.config.globalProperties.$api = API;
-
-// ==================== МОНТИРОВАНИЕ ====================
 
 app.mount('#app');

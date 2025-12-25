@@ -35,7 +35,7 @@ const NavbarComponent = {
                             <i class="bi bi-people me-1"></i> Врачи
                         </router-link>
                     </li>
-                    <!-- КОНТАКТЫ УБРАНЫ ИЗ МЕНЮ -->
+
                 </ul>
 
                 <!-- Кнопки авторизации -->
@@ -134,14 +134,9 @@ const FooterComponent = {
                     </div>
                     <p class="text-white-50">
                         Современная многопрофильная клиника с передовыми методами диагностики и лечения.
-                        Забота о вашем здоровье — наш главный приоритет.
+
                     </p>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-outline-light btn-sm"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="btn btn-outline-light btn-sm"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="btn btn-outline-light btn-sm"><i class="bi bi-telegram"></i></a>
-                        <a href="#" class="btn btn-outline-light btn-sm"><i class="bi bi-youtube"></i></a>
-                    </div>
+
                 </div>
                 <div class="col-6 col-lg-2">
                     <h6 class="fw-bold mb-3">Навигация</h6>
@@ -165,15 +160,15 @@ const FooterComponent = {
                     <ul class="list-unstyled text-white-50">
                         <li class="mb-2"><i class="bi bi-telephone me-2"></i> +7 (495) 123-45-67</li>
                         <li class="mb-2"><i class="bi bi-envelope me-2"></i> info@medcenter.ru</li>
-                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> г. Москва, ул. Примерная, 123</li>
-                        <li class="mb-2"><i class="bi bi-clock me-2"></i> Пн-Пт: 8:00-21:00, Сб-Вс: 9:00-18:00</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> г. Воронеж, ул. Олимпийская, 123</li>
+
                     </ul>
                 </div>
             </div>
             <hr class="my-4 border-secondary">
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
-                    <small class="text-white-50">© 2024 МедЦентр+. Все права защищены.</small>
+                    <small class="text-white-50">© 2025 МедЦентр+. Все права защищены.</small>
                 </div>
                 <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
                     <a href="#" class="text-white-50 text-decoration-none small me-3">Политика конфиденциальности</a>

@@ -34,11 +34,11 @@ public class AuthApiController {
         this.userService = userService;
     }
 
-    // ==================== ЛОГИН ====================
+    // ЛОГИН
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            // Проверяем пользователя
+
             UserData user = userService.findByEmail(request.getEmail());
 
             if (user == null) {
@@ -46,33 +46,32 @@ public class AuthApiController {
                         .body(Map.of("message", "Неверный email или пароль"));
             }
 
-            // Проверяем пароль
+
             if (!userService.checkPassword(request.getEmail(), request.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "Неверный email или пароль"));
             }
 
-            // Создаём список ролей
+
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
             if (Boolean.TRUE.equals(user.getIsAdmin())) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
 
-            // Создаём аутентификацию
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(user.getEmail(), null, authorities);
 
-            // Устанавливаем в SecurityContext
+
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
             securityContext.setAuthentication(authToken);
             SecurityContextHolder.setContext(securityContext);
 
-            // Сохраняем в сессию
+
             HttpSession session = httpRequest.getSession(true);
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
-            // Возвращаем данные пользователя
+
             UserDTO userDTO = new UserDTO(
                     user.getId(),
                     user.getFullName(),
@@ -94,7 +93,7 @@ public class AuthApiController {
         }
     }
 
-    // ==================== РЕГИСТРАЦИЯ ====================
+    // РЕГИСТРАЦИЯ
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserRegistrationDTO dto) {
         try {
@@ -114,13 +113,13 @@ public class AuthApiController {
                         .body(Map.of("message", "Пароль должен содержать минимум 6 символов"));
             }
 
-            // Проверка совпадения паролей
+            //  совпадение паролей
             if (dto.getConfirmPassword() == null || !dto.getPassword().equals(dto.getConfirmPassword())) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("message", "Пароли не совпадают"));
             }
 
-            // Проверка существования email
+            //  существование email
             if (userService.existsByEmail(dto.getEmail())) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("message", "Пользователь с таким email уже существует"));
@@ -138,7 +137,7 @@ public class AuthApiController {
         }
     }
 
-    // ==================== ПОЛУЧИТЬ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ====================
+    //ПОЛУЧИТЬ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         if (principal == null) {
@@ -160,7 +159,7 @@ public class AuthApiController {
         }
     }
 
-    // ==================== ОБНОВИТЬ ПРОФИЛЬ ====================
+    // ОБНОВИТЬ ПРОФИЛЬ
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody UserEditDTO dto, Principal principal) {
         if (principal == null) {
@@ -190,7 +189,7 @@ public class AuthApiController {
         }
     }
 
-    // ==================== ВЫХОД ====================
+    //  ВЫХОД
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         try {

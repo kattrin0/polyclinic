@@ -11,9 +11,7 @@ const HomePage = {
             <div class="container py-5">
                 <div class="row align-items-center">
                     <div class="col-lg-6">
-                        <span class="badge bg-light text-primary mb-3 px-3 py-2">
-                            <i class="bi bi-star-fill me-1"></i> Более 15 лет опыта
-                        </span>
+
                         <h1 class="display-4 fw-bold mb-4">
                             Современная медицина для всей семьи
                         </h1>
@@ -32,67 +30,9 @@ const HomePage = {
                             </router-link>
                         </div>
 
-                        <!-- Stats -->
-                        <div class="row mt-5 pt-4 border-top border-light border-opacity-25">
-                            <div class="col-4 text-center">
-                                <h2 class="display-5 fw-bold mb-0">{{ doctors.length }}+</h2>
-                                <small class="opacity-75">Врачей</small>
-                            </div>
-                            <div class="col-4 text-center">
-                                <h2 class="display-5 fw-bold mb-0">10K+</h2>
-                                <small class="opacity-75">Пациентов</small>
-                            </div>
-                            <div class="col-4 text-center">
-                                <h2 class="display-5 fw-bold mb-0">15</h2>
-                                <small class="opacity-75">Лет опыта</small>
-                            </div>
-                        </div>
+
                     </div>
-                    <div class="col-lg-6 d-none d-lg-block">
-                        <div class="card bg-white bg-opacity-10 border-0 p-4">
-                            <h5 class="text-white mb-4">
-                                <i class="bi bi-lightning-charge me-2"></i> Быстрая запись
-                            </h5>
-                            <div class="d-grid gap-3">
-                                <router-link to="/doctors" class="quick-action-card text-decoration-none">
-                                    <div class="d-flex align-items-center">
-                                        <div class="icon-box me-3">
-                                            <i class="bi bi-person-badge"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <strong>Выбрать врача</strong>
-                                            <small class="d-block opacity-75">{{ doctors.length }}+ специалистов</small>
-                                        </div>
-                                        <i class="bi bi-chevron-right"></i>
-                                    </div>
-                                </router-link>
-                                <router-link to="/services" class="quick-action-card text-decoration-none">
-                                    <div class="d-flex align-items-center">
-                                        <div class="icon-box me-3">
-                                            <i class="bi bi-clipboard2-pulse"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <strong>Выбрать услугу</strong>
-                                            <small class="d-block opacity-75">{{ services.length }}+ услуг</small>
-                                        </div>
-                                        <i class="bi bi-chevron-right"></i>
-                                    </div>
-                                </router-link>
-                                <a href="tel:+74951234567" class="quick-action-card text-decoration-none">
-                                    <div class="d-flex align-items-center">
-                                        <div class="icon-box me-3">
-                                            <i class="bi bi-telephone"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <strong>Позвонить</strong>
-                                            <small class="d-block opacity-75">+7 (495) 123-45-67</small>
-                                        </div>
-                                        <i class="bi bi-chevron-right"></i>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </section>
@@ -123,13 +63,13 @@ const HomePage = {
             </div>
         </section>
 
-        <!-- Популярные услуги -->
+        <!--  услуги -->
         <section class="py-5">
             <div class="container py-4">
                 <div class="text-center mb-5">
                     <span class="badge bg-primary-subtle text-primary mb-2">Услуги</span>
-                    <h2 class="fw-bold">Популярные услуги</h2>
-                    <p class="text-muted">Наиболее востребованные медицинские услуги</p>
+                    <h2 class="fw-bold">Услуги</h2>
+
                 </div>
 
                 <div class="row g-4">
@@ -205,30 +145,6 @@ const HomePage = {
             </div>
         </section>
 
-        <!-- CTA -->
-        <section class="py-5 bg-primary text-white">
-            <div class="container py-4">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <h2 class="fw-bold mb-3">Нужна консультация?</h2>
-                        <p class="lead mb-0 opacity-75">
-                            Запишитесь на приём онлайн или позвоните нам. Мы работаем без выходных!
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                        <a href="tel:+74951234567" class="btn btn-light btn-lg me-2">
-                            <i class="bi bi-telephone me-2"></i> Позвонить
-                        </a>
-                        <router-link v-if="isAuthenticated" to="/book-appointment" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-calendar-plus me-2"></i> Записаться
-                        </router-link>
-                        <router-link v-else to="/register" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-calendar-plus me-2"></i> Записаться
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-        </section>
     </div>
     `,
 

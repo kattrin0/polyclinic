@@ -266,216 +266,241 @@ const AdminDashboard = {
         }
     }
 };
-
-// ==================== ADMIN USERS ====================
+//==================== ADMIN USERS====================
 const AdminUsers = {
-    template: `
+  template: `
+<div>
+  <!-- Уведомления -->
+  <div v-if="success" class="alert alert-success alert-dismissible fade show">
+    <i class="bi bi-check-circle me-2"></i>{{ success }}
+    <button type="button" class="btn-close" @click="success = null"></button>
+  </div>
+  <div v-if="error" class="alert alert-danger alert-dismissible fade show">
+    <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+    <button type="button" class="btn-close" @click="error = null"></button>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <!-- Уведомления -->
-        <div v-if="success" class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i> {{ success }}
-            <button type="button" class="btn-close" @click="success = null"></button>
-        </div>
-        <div v-if="error" class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-circle me-2"></i> {{ error }}
-            <button type="button" class="btn-close" @click="error = null"></button>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="mb-1">Управление пользователями</h4>
-                <p class="text-muted mb-0">Всего: {{ users.length }} пользователей</p>
-            </div>
-        </div>
-
-        <!-- Загрузка -->
-        <loading-spinner v-if="loading" message="Загрузка пользователей..." />
-
-        <!-- Таблица пользователей -->
-        <div v-else class="card border-0 shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>ФИО</th>
-                                <th>Email</th>
-                                <th>Телефон</th>
-                                <th>Роль</th>
-                                <th class="text-end">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="user in users" :key="user.id">
-                                <td>{{ user.id }}</td>
-                                <td>{{ user.fullName }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.phone || 'Не указан' }}</td>
-                                <td>
-                                    <span v-if="user.admin || user.role === 'ADMIN'" class="badge bg-danger">Админ</span>
-                                    <span v-else class="badge bg-secondary">Пользователь</span>
-                                </td>
-                                <td class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary btn-action me-1"
-                                            @click="editUser(user)" title="Редактировать">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-warning btn-action me-1"
-                                            @click="toggleAdmin(user)" title="Сменить роль">
-                                        <i class="bi bi-arrow-repeat"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger btn-action"
-                                            @click="deleteUser(user)" title="Удалить">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно редактирования -->
-        <div class="modal fade" id="editUserModal" tabindex="-1" ref="editModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form @submit.prevent="saveUser">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="bi bi-pencil me-2"></i> Редактирование пользователя
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">ФИО</label>
-                                <input type="text" v-model="editForm.fullName" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" v-model="editForm.email" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Телефон</label>
-                                <input type="text" v-model="editForm.phone" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    Новый пароль <small class="text-muted">(оставьте пустым, чтобы не менять)</small>
-                                </label>
-                                <input type="password" v-model="editForm.password" class="form-control">
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" v-model="editForm.isAdmin" class="form-check-input" id="editIsAdmin">
-                                <label class="form-check-label" for="editIsAdmin">Администратор</label>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="submit" class="btn btn-primary" :disabled="saving">
-                                <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
-                                <i v-else class="bi bi-check-lg me-1"></i> Сохранить
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+      <h4 class="mb-1">Управление пользователями</h4>
+      <p class="text-muted mb-0">Всего: {{ totalItems }} пользователей</p>
     </div>
-    `,
+  </div>
 
-    data() {
-        return {
-            users: [],
-            loading: false,
-            saving: false,
-            success: null,
-            error: null,
-            editForm: {
-                id: null,
-                fullName: '',
-                email: '',
-                phone: '',
-                password: '',
-                isAdmin: false
-            },
-            editModal: null
-        };
+  <!-- Загрузка -->
+  <loading-spinner v-if="loading" message="Загрузка пользователей..." />
+
+  <!-- Таблица пользователей -->
+  <div v-else class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>ФИО</th>
+              <th>Email</th>
+              <th>Телефон</th>
+              <th>Роль</th>
+              <th class="text-end">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id">
+              <td>{{ user.id }}</td>
+              <td>{{ user.fullName }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phone || 'Не указан' }}</td>
+              <td>
+                <span v-if="user.isAdmin || user.role === 'ADMIN'" class="badge bg-danger">Админ</span>
+                <span v-else class="badge bg-secondary">Пользователь</span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary btn-action me-1"
+                        @click="editUser(user)" title="Редактировать">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning btn-action me-1"
+                        @click="toggleAdmin(user)" title="Сменить роль">
+                  <i class="bi bi-arrow-repeat"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger btn-action"
+                        @click="deleteUser(user)" title="Удалить">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Пагинация -->
+    <div v-if="totalPages > 1" class="card-footer bg-white">
+      <pagination-component
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @page-change="loadUsers"
+      />
+    </div>
+
+    <!-- Пустое состояние -->
+    <div v-if="users.length === 0 && !loading" class="card-body text-center py-5">
+      <i class="bi bi-people-x display-1 text-muted"></i>
+      <h5 class="mt-3">Пользователи не найдены</h5>
+      <p class="text-muted">Нет зарегистрированных пользователей</p>
+    </div>
+  </div>
+
+  <!-- Модальное окно редактирования -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" ref="editModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form @submit.prevent="saveUser">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-pencil me-2"></i> Редактирование пользователя
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">ФИО</label>
+              <input type="text" v-model="editForm.fullName" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" v-model="editForm.email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Телефон</label>
+              <input type="text" v-model="editForm.phone" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">
+                Новый пароль
+                <small class="text-muted">(оставьте пустым, чтобы не менять)</small>
+              </label>
+              <input type="password" v-model="editForm.password" class="form-control">
+            </div>
+            <div class="form-check">
+              <input type="checkbox" v-model="editForm.isAdmin" class="form-check-input" id="editIsAdmin">
+              <label class="form-check-label" for="editIsAdmin">Администратор</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">
+              <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
+              <i v-else class="bi bi-check-lg me-1"></i> Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+
+  data() {
+    return {
+      users: [],
+      loading: false,
+      saving: false,
+      success: null,
+      error: null,
+      editForm: {
+        id: null,
+        fullName: '',
+        email: '',
+        phone: '',
+        password: '',
+        isAdmin: false
+      },
+      editModal: null,
+
+      // Пагинация ↓↓↓
+      currentPage: 0,
+      totalPages: 1,
+      totalItems: 0
+    };
+  },
+
+  mounted() {
+    this.editModal = new bootstrap.Modal(this.$refs.editModal);
+    this.loadUsers(0);
+  },
+
+  methods: {
+    async loadUsers(page = 0, size = 20) {
+      this.loading = true;
+      try {
+        const response = await API.users.getAll(page, size);
+        this.users = response.content || [];
+        this.currentPage = response.number || 0;
+        this.totalPages = response.totalPages || 1;
+        this.totalItems = response.totalElements || this.users.length;
+      } catch (error) {
+        console.error('Load users error:', error);
+        this.error = 'Ошибка загрузки пользователей';
+      } finally {
+        this.loading = false;
+      }
     },
 
-    mounted() {
-        this.editModal = new bootstrap.Modal(this.$refs.editModal);
-        this.loadUsers();
+    editUser(user) {
+      this.editForm = {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone || '',
+        password: '',
+        isAdmin: user.isAdmin || user.role === 'ADMIN'
+      };
+      this.editModal.show();
     },
 
-    methods: {
-        async loadUsers() {
-          this.loading = true;
-          try {
-            // Увеличьте size до 1000 или возьмите все:
-            const response = await API.users.getAll(0, 1000); // ← вот здесь
-            this.users = response.content || response;
-          } catch (error) {
-            console.error('Load users error:', error);
-            this.error = 'Ошибка загрузки пользователей';
-          } finally {
-            this.loading = false;
-          }
-        },
+    async saveUser() {
+      this.saving = true;
+      try {
+        await API.users.update(this.editForm.id, this.editForm);
+        this.editModal.hide();
+        this.success = 'Пользователь успешно обновлён';
+        this.loadUsers(this.currentPage);
+      } catch (error) {
+        console.error('Save user error:', error);
+        this.error = error.response?.data?.message || 'Ошибка сохранения';
+      } finally {
+        this.saving = false;
+      }
+    },
 
-        editUser(user) {
-            this.editForm = {
-                id: user.id,
-                fullName: user.fullName,
-                email: user.email,
-                phone: user.phone || '',
-                password: '',
-                isAdmin: user.admin || user.role === 'ADMIN'
-            };
-            this.editModal.show();
-        },
+    async toggleAdmin(user) {
+      if (!confirm(`Изменить роль пользователя "${user.fullName}"?`)) return;
+      try {
+        await API.users.toggleAdmin(user.id);
+        this.success = 'Роль пользователя изменена';
+        this.loadUsers(this.currentPage);
+      } catch (error) {
+        console.error('Toggle admin error:', error);
+        this.error = 'Ошибка изменения роли';
+      }
+    },
 
-        async saveUser() {
-            this.saving = true;
-            try {
-                await API.users.update(this.editForm.id, this.editForm);
-                this.editModal.hide();
-                this.success = 'Пользователь успешно обновлён';
-                this.loadUsers();
-            } catch (error) {
-                console.error('Save user error:', error);
-                this.error = error.response?.data?.message || 'Ошибка сохранения';
-            } finally {
-                this.saving = false;
-            }
-        },
-
-        async toggleAdmin(user) {
-            if (!confirm('Изменить роль пользователя?')) return;
-
-            try {
-                await API.users.toggleAdmin(user.id);
-                this.success = 'Роль пользователя изменена';
-                this.loadUsers();
-            } catch (error) {
-                console.error('Toggle admin error:', error);
-                this.error = 'Ошибка изменения роли';
-            }
-        },
-
-        async deleteUser(user) {
-            if (!confirm(`Удалить пользователя "${user.fullName}"?`)) return;
-
-            try {
-                await API.users.delete(user.id);
-                this.success = 'Пользователь удалён';
-                this.loadUsers();
-            } catch (error) {
-                console.error('Delete user error:', error);
-                this.error = 'Ошибка удаления пользователя';
-            }
-        }
+    async deleteUser(user) {
+      if (!confirm(`Удалить пользователя "${user.fullName}"?`)) return;
+      try {
+        await API.users.delete(user.id);
+        this.success = 'Пользователь удалён';
+        // Перезагружаем текущую страницу; если она оказалась пустой — уйдём на предыдущую
+        const newPage = this.users.length === 1 && this.currentPage > 0
+          ? this.currentPage - 1
+          : this.currentPage;
+        this.loadUsers(newPage);
+      } catch (error) {
+        console.error('Delete user error:', error);
+        this.error = 'Ошибка удаления пользователя';
+      }
     }
+  }
 };

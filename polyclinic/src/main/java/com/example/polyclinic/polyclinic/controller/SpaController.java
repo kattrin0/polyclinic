@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SpaController {
 
-    // Только конкретные маршруты Vue Router
-    // НЕ используем /** или общие паттерны!
+    // маршруты Router
+
     @GetMapping(value = {
             "/",
             "/login",
@@ -23,7 +23,7 @@ public class SpaController {
         return "forward:/index.html";
     }
 
-    // Админские маршруты отдельно
+    // aдминские маршруты
     @GetMapping(value = {
             "/admin",
             "/admin/users",

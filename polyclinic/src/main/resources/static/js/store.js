@@ -23,7 +23,7 @@ const Store = {
         selectedDepartment: null
     }),
 
-    // ==================== AUTH ====================
+    //  AUTH
     async checkAuth() {
         try {
             const user = await API.auth.getCurrentUser();
@@ -64,7 +64,7 @@ const Store = {
         this.state.isAdmin = false;
     },
 
-    // ==================== DATA ====================
+    //  DATA
     async loadPublicData() {
         this.state.loading = true;
         try {
@@ -90,7 +90,7 @@ const Store = {
         }
     },
 
-    // ==================== TOASTS ====================
+    // TOASTS
     showToast(message, type = 'info', duration = 5000) {
         const id = Date.now();
         this.state.toasts.push({ id, message, type });
@@ -107,7 +107,7 @@ const Store = {
         }
     },
 
-    // ==================== HELPERS ====================
+    //  HELPERS
     getDepartmentIcon(name) {
         if (!name) return '🏥';
         const icons = {
@@ -147,4 +147,4 @@ const Store = {
     }
 };
 
-console.log('✅ Store загружен');
+console.log(' Store загружен');
