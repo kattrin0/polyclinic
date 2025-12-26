@@ -95,139 +95,164 @@ const AdminSidebar = {
 const AdminDashboard = {
     template: `
     <div>
-        <!-- Заголовок -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="mb-1">Добро пожаловать, {{ user?.fullName }}!</h4>
-                <p class="text-muted mb-0">Панель управления поликлиникой</p>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <span class="badge bg-success"><i class="bi bi-circle-fill me-1"></i> Онлайн</span>
-            </div>
-        </div>
+        <h4 class="mb-4">
+            <i class="bi bi-speedometer2 me-2"></i>Панель управления
+        </h4>
 
-        <!-- Загрузка -->
         <loading-spinner v-if="loading" message="Загрузка статистики..." />
 
-        <!-- Статистика -->
-        <div v-else class="row g-4">
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-primary-subtle text-primary me-3">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ stats.usersCount || 0 }}</h3>
-                            <small class="text-muted">Пользователей</small>
+        <template v-else>
+            <!-- Основные карточки -->
+            <div class="row g-4 mb-4">
+                <div class="col-6 col-lg-3">
+                    <div class="card bg-primary text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 opacity-75">Пользователи</h6>
+                                    <h2 class="mb-0">{{ stats.usersCount || 0 }}</h2>
+                                </div>
+                                <i class="bi bi-people display-4 opacity-50"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent border-0 pt-0">
-                        <router-link to="/admin/users" class="btn btn-sm btn-outline-primary w-100">
-                            Управление <i class="bi bi-arrow-right"></i>
-                        </router-link>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card bg-success text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 opacity-75">Врачи</h6>
+                                    <h2 class="mb-0">{{ stats.doctorsCount || 0 }}</h2>
+                                </div>
+                                <i class="bi bi-person-badge display-4 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card bg-info text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 opacity-75">Услуги</h6>
+                                    <h2 class="mb-0">{{ stats.servicesCount || 0 }}</h2>
+                                </div>
+                                <i class="bi bi-clipboard2-pulse display-4 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card bg-warning text-dark h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2 opacity-75">Записи</h6>
+                                    <h2 class="mb-0">{{ stats.appointmentsCount || 0 }}</h2>
+                                </div>
+                                <i class="bi bi-calendar-check display-4 opacity-50"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-success-subtle text-success me-3">
-                            <i class="bi bi-person-badge"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ stats.doctorsCount || 0 }}</h3>
-                            <small class="text-muted">Врачей</small>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 pt-0">
-                        <router-link to="/admin/doctors" class="btn btn-sm btn-outline-success w-100">
-                            Управление <i class="bi bi-arrow-right"></i>
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-info-subtle text-info me-3">
-                            <i class="bi bi-clipboard2-pulse"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ stats.servicesCount || 0 }}</h3>
-                            <small class="text-muted">Услуг</small>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 pt-0">
-                        <router-link to="/admin/services" class="btn btn-sm btn-outline-info w-100">
-                            Управление <i class="bi bi-arrow-right"></i>
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-warning-subtle text-warning me-3">
-                            <i class="bi bi-building"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ stats.departmentsCount || 0 }}</h3>
-                            <small class="text-muted">Отделений</small>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 pt-0">
-                        <router-link to="/admin/departments" class="btn btn-sm btn-outline-warning w-100">
-                            Управление <i class="bi bi-arrow-right"></i>
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="card stat-card h-100">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-danger-subtle text-danger me-3">
-                            <i class="bi bi-calendar-check"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ stats.appointmentsCount || 0 }}</h3>
-                            <small class="text-muted">Записей</small>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 pt-0">
-                        <router-link to="/admin/appointments" class="btn btn-sm btn-outline-danger w-100">
-                            Управление <i class="bi bi-arrow-right"></i>
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Быстрые действия -->
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i> Быстрые действия</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <router-link to="/admin/services" class="btn btn-outline-primary w-100 py-3">
-                            <i class="bi bi-plus-circle me-2"></i> Добавить услугу
-                        </router-link>
+            <!-- Статистика за месяц -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="bi bi-calendar-event text-primary fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1">Записей за этот месяц</h6>
+                                    <h3 class="mb-0">{{ stats.appointmentsThisMonth || 0 }}</h3>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <router-link to="/admin/departments" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-building-add me-2"></i> Добавить отделение
-                        </router-link>
-                    </div>
-                    <div class="col-md-4">
-                        <router-link to="/admin/appointments" class="btn btn-outline-info w-100 py-3">
-                            <i class="bi bi-calendar-plus me-2"></i> Просмотр записей
-                        </router-link>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="bi bi-currency-dollar text-success fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1">Выручка за месяц</h6>
+                                    <h3 class="mb-0 text-success">{{ formatPrice(stats.revenueThisMonth) }} ₽</h3>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Статистика по отделениям -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building me-2"></i>
+                        Объём услуг по отделениям
+                    </h5>
+                    <small class="text-muted">За последний год</small>
+                </div>
+                <div class="card-body p-0">
+                    <div v-if="stats.departmentStats && stats.departmentStats.length > 0">
+                        <div class="accordion accordion-flush" id="departmentsAccordion">
+                            <div v-for="dept in stats.departmentStats" :key="dept.id" class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse"
+                                            :data-bs-target="'#dept-' + dept.id">
+                                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                            <div>
+                                                <span class="me-2">{{ getDepartmentIcon(dept.name) }}</span>
+                                                <strong>{{ dept.name }}</strong>
+                                                <span class="badge bg-secondary ms-2">{{ dept.doctorsCount }} врачей</span>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-primary me-2">{{ dept.appointmentsCount }} записей</span>
+                                                <span class="badge bg-success me-2">{{ dept.completedCount }} завершено</span>
+                                                <span class="text-success fw-bold">{{ formatPrice(dept.totalRevenue) }} ₽</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div :id="'dept-' + dept.id" class="accordion-collapse collapse"
+                                     data-bs-parent="#departmentsAccordion">
+                                    <div class="accordion-body bg-light">
+                                        <h6 class="mb-3">Топ врачи отделения:</h6>
+                                        <div v-if="dept.topDoctors && dept.topDoctors.length > 0" class="list-group">
+                                            <div v-for="doc in dept.topDoctors" :key="doc.id"
+                                                 class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>{{ doc.fullName }}</strong>
+                                                    <br><small class="text-muted">{{ doc.specialization }}</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-info me-2">{{ doc.appointmentsCount }} приёмов</span>
+                                                    <span class="text-success fw-bold">{{ formatPrice(doc.totalRevenue) }} ₽</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-muted">Нет данных о врачах</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-muted">
+                        <i class="bi bi-building display-4"></i>
+                        <p class="mt-2">Нет данных по отделениям</p>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
     `,
 
@@ -238,11 +263,7 @@ const AdminDashboard = {
         };
     },
 
-    computed: {
-        user() { return Store.state.user; }
-    },
-
-    created() {
+    mounted() {
         this.loadStats();
     },
 
@@ -251,18 +272,22 @@ const AdminDashboard = {
             this.loading = true;
             try {
                 this.stats = await API.stats.getDashboard();
+                console.log('Dashboard stats:', this.stats);
             } catch (error) {
-                // Если эндпоинт не работает, считаем из загруженных данных
-                this.stats = {
-                    usersCount: 0,
-                    doctorsCount: Store.state.doctors.length,
-                    servicesCount: Store.state.services.length,
-                    departmentsCount: Store.state.departments.length,
-                    appointmentsCount: 0
-                };
+                console.error('Error loading stats:', error);
+                Store.showToast('Ошибка загрузки статистики', 'error');
             } finally {
                 this.loading = false;
             }
+        },
+
+        formatPrice(price) {
+            if (price === null || price === undefined) return '0';
+            return Store.formatPrice(price);
+        },
+
+        getDepartmentIcon(name) {
+            return Store.getDepartmentIcon(name);
         }
     }
 };

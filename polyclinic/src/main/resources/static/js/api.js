@@ -50,6 +50,15 @@ const API = {
             const response = await axios.get('/departments');
             return response.data;
         },
+        async getAllPaginated(params = {}) {
+            const query = new URLSearchParams({
+                page: params.page || 0,
+                sortBy: params.sortBy || 'id',
+                sortDir: params.sortDir || 'asc'
+            });
+            const response = await axios.get(`/departments?${query}`);
+            return response.data;
+        },
         async getById(id) {
             const response = await axios.get(`/departments/${id}`);
             return response.data;
