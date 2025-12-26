@@ -52,6 +52,19 @@ public class UserService {
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
+    // Добавьте в UserService метод с фильтрацией:
+
+
+
+    public Page<UserDTO> getUsersFiltered(Boolean isAdmin, Pageable pageable) {
+        Page<UserData> users;
+        if (isAdmin == null) {
+            users = userRepository.findAll(pageable);
+        } else {
+            users = userRepository.findByIsAdmin(isAdmin, pageable);
+        }
+        return users.map(this::convertToDTO);
+    }
     @Transactional
     public UserData registerUser(UserRegistrationDTO dto) {
         String fullName = sanitize(dto.getFullName());

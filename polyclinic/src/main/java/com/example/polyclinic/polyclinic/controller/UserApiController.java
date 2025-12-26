@@ -22,16 +22,21 @@ public class UserApiController {
         this.userService = userService;
     }
 
-    // Получить всех пользователей
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        return ResponseEntity.ok(userService.getAllUsersPaged(pageable));
+            @RequestParam(required = false) Boolean isAdmin,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, 20, sort);
+
+        return ResponseEntity.ok(userService.getUsersFiltered(isAdmin, pageable));
     }
 
-    // Получить пользователя по ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         UserEditDTO user = userService.getUserForEdit(id);
@@ -41,7 +46,6 @@ public class UserApiController {
         return ResponseEntity.ok(user);
     }
 
-    // Обновить пользователя
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Integer id, @RequestBody UserEditDTO dto) {
         try {
@@ -52,7 +56,6 @@ public class UserApiController {
         }
     }
 
-    // Переключить роль админа
     @PatchMapping("/{id}/toggle-admin")
     public ResponseEntity<?> toggleAdmin(@PathVariable Integer id) {
         try {
@@ -63,7 +66,6 @@ public class UserApiController {
         }
     }
 
-    // Удалить пользователя
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         try {

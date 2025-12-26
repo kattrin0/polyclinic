@@ -178,6 +178,11 @@ public class DoctorService {
         return doctorRepository.count();
     }
 
+
+    public Page<DoctorDTO> getDoctorsFiltered(Integer departmentId, Boolean isActive, Pageable pageable) {
+        return doctorRepository.findAllFiltered(departmentId, isActive, pageable)
+                .map(this::convertToDTO);
+    }
     private DoctorDTO convertToDTO(Doctor doctor) {
         String email = null;
         String phone = null;

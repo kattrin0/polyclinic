@@ -3,6 +3,10 @@ package com.example.polyclinic.polyclinic.controller;
 import com.example.polyclinic.polyclinic.dto.ServiceDTO;
 import com.example.polyclinic.polyclinic.dto.ServiceEditDTO;
 import com.example.polyclinic.polyclinic.service.ServiceService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +23,31 @@ public class ServiceApiController {
         this.serviceService = serviceService;
     }
 
-    // Получить все услуги
     @GetMapping
-    public ResponseEntity<List<ServiceDTO>> getAllServices(
-            @RequestParam(required = false) Integer departmentId) {
+    public ResponseEntity<?> getAllServices(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Integer departmentId,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "false") boolean paginated) {
 
-        if (departmentId != null) {
-            return ResponseEntity.ok(serviceService.getServicesByDepartmentId(departmentId));
+        // Без пагинации - для публичных страниц
+        if (!paginated) {
+            if (departmentId != null) {
+                return ResponseEntity.ok(serviceService.getServicesByDepartmentId(departmentId));
+            }
+            return ResponseEntity.ok(serviceService.getAllServices());
         }
-        return ResponseEntity.ok(serviceService.getAllServices());
+
+        // С пагинацией - для админки
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, 20, sort);
+
+        return ResponseEntity.ok(serviceService.getServicesFiltered(departmentId, pageable));
     }
 
-    // Получить услугу по ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getServiceById(@PathVariable Integer id) {
         ServiceEditDTO service = serviceService.getServiceForEdit(id);
@@ -40,7 +57,6 @@ public class ServiceApiController {
         return ResponseEntity.ok(service);
     }
 
-    // Создать услугу
     @PostMapping
     public ResponseEntity<?> createService(@RequestBody ServiceEditDTO dto) {
         try {
@@ -51,7 +67,6 @@ public class ServiceApiController {
         }
     }
 
-    // Обновить услугу
     @PutMapping("/{id}")
     public ResponseEntity<?> updateService(@PathVariable Integer id, @RequestBody ServiceEditDTO dto) {
         try {
@@ -62,7 +77,6 @@ public class ServiceApiController {
         }
     }
 
-    // Удалить услугу
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteService(@PathVariable Integer id) {
         try {

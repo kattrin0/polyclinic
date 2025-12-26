@@ -24,16 +24,22 @@ public class AppointmentApiController {
         this.appointmentService = appointmentService;
     }
 
-    // Получить все записи (для админа)
     @GetMapping
     public ResponseEntity<Page<AppointmentDTO>> getAllAppointments(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsPaged(pageable));
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer doctorId,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, 20, sort);
+
+        return ResponseEntity.ok(appointmentService.getAppointmentsFiltered(status, doctorId, pageable));
     }
 
-    // Получить записи текущего пользователя
     @GetMapping("/my")
     public ResponseEntity<?> getMyAppointments(Principal principal) {
         if (principal == null) {
@@ -43,7 +49,6 @@ public class AppointmentApiController {
         return ResponseEntity.ok(appointments);
     }
 
-    // Создать запись
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentCreateDTO dto, Principal principal) {
         if (principal == null) {
@@ -51,12 +56,11 @@ public class AppointmentApiController {
         }
 
         try {
-            // Парсим дату из ISO формата
             if (dto.getAppointmentDate() != null && dto.getAppointmentDate().contains("T")) {
                 String[] parts = dto.getAppointmentDate().split("T");
                 dto.setAppointmentDate(parts[0]);
                 if (parts.length > 1) {
-                    dto.setAppointmentTime(parts[1].substring(0, 5)); // HH:mm
+                    dto.setAppointmentTime(parts[1].substring(0, 5));
                 }
             }
 
@@ -67,7 +71,6 @@ public class AppointmentApiController {
         }
     }
 
-    // Отменить запись
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<?> cancelAppointment(@PathVariable Integer id, Principal principal) {
         if (principal == null) {
@@ -82,7 +85,6 @@ public class AppointmentApiController {
         }
     }
 
-    // Обновить статус (для админа)
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
         try {
@@ -94,7 +96,6 @@ public class AppointmentApiController {
         }
     }
 
-    // Удалить запись (для админа)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAppointment(@PathVariable Integer id) {
         try {

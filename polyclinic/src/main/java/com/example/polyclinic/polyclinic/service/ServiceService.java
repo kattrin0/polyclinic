@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,11 @@ public class ServiceService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    public Page<ServiceDTO> getServicesFiltered(Integer departmentId, Pageable pageable) {
+        return serviceRepository.findAllFiltered(departmentId, pageable)
+                .map(this::convertToDTO);
+    }
+
 
     public ServiceEditDTO getServiceForEdit(Integer id) {
         Service service = serviceRepository.findById(id).orElse(null);

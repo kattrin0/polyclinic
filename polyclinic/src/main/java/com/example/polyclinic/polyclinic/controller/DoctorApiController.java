@@ -4,6 +4,10 @@ import com.example.polyclinic.polyclinic.dto.DoctorCreateDTO;
 import com.example.polyclinic.polyclinic.dto.DoctorDTO;
 import com.example.polyclinic.polyclinic.dto.DoctorEditDTO;
 import com.example.polyclinic.polyclinic.service.DoctorService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,22 +24,35 @@ public class DoctorApiController {
         this.doctorService = doctorService;
     }
 
-    // Получить всех врачей
     @GetMapping
-    public ResponseEntity<List<DoctorDTO>> getAllDoctors(
+    public ResponseEntity<?> getAllDoctors(
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) Boolean active,
-            @RequestParam(required = false) Integer departmentId) {
+            @RequestParam(required = false) Integer departmentId,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "false") boolean paginated) {
 
-        if (Boolean.TRUE.equals(active)) {
-            return ResponseEntity.ok(doctorService.getActiveDoctors());
+        // Без пагинации - для публичных страниц
+        if (!paginated) {
+            if (Boolean.TRUE.equals(active)) {
+                return ResponseEntity.ok(doctorService.getActiveDoctors());
+            }
+            if (departmentId != null) {
+                return ResponseEntity.ok(doctorService.getDoctorsByDepartmentId(departmentId));
+            }
+            return ResponseEntity.ok(doctorService.getAllDoctors());
         }
-        if (departmentId != null) {
-            return ResponseEntity.ok(doctorService.getDoctorsByDepartmentId(departmentId));
-        }
-        return ResponseEntity.ok(doctorService.getAllDoctors());
+
+        // С пагинацией - для админки
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, 20, sort);
+
+        return ResponseEntity.ok(doctorService.getDoctorsFiltered(departmentId, active, pageable));
     }
 
-    // Получить врача по ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getDoctorById(@PathVariable Integer id) {
         DoctorEditDTO doctor = doctorService.getDoctorForEdit(id);
@@ -45,7 +62,6 @@ public class DoctorApiController {
         return ResponseEntity.ok(doctor);
     }
 
-    // Создать врача
     @PostMapping
     public ResponseEntity<?> createDoctor(@RequestBody DoctorCreateDTO dto) {
         try {
@@ -56,7 +72,6 @@ public class DoctorApiController {
         }
     }
 
-    // Обновить врача
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDoctor(@PathVariable Integer id, @RequestBody DoctorEditDTO dto) {
         try {
@@ -67,7 +82,6 @@ public class DoctorApiController {
         }
     }
 
-    // Переключить статус активности
     @PatchMapping("/{id}/toggle-active")
     public ResponseEntity<?> toggleActive(@PathVariable Integer id) {
         try {
@@ -78,7 +92,6 @@ public class DoctorApiController {
         }
     }
 
-    // Удалить врача
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDoctor(@PathVariable Integer id) {
         try {
